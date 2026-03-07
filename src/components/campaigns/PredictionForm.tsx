@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import styles from './PredictionForm.module.css';
+import { API_BASE_URL } from '@/config/api';
 import ImageUpload from './ImageUpload';
 import { CAMPAIGN_API_BASE_URL } from '@/config/api';
 
