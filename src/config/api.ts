@@ -10,7 +10,7 @@
  *    import { API_BASE_URL } from '@/config/api';
  *    fetch(`${API_BASE_URL}/api/your-route`, ...)
  *
- * Set NEXT_PUBLIC_API_URL in your .env.local to
+ * Set NEXT_PUBLIC_API_BASE_URL in your .env.local to
  * point at the backend. Defaults to localhost:8000.
  */
 
