@@ -7,6 +7,7 @@ import { type BusinessProfile } from '@/types';
 interface BusinessProfileStepProps {
   data: Partial<BusinessProfile>;
   onDataUpdate: (data: BusinessProfile) => void;
+  showErrors?: boolean;
 }
 
 const BUSINESS_TYPES = [
@@ -37,7 +38,7 @@ const BUSINESS_STAGES = [
   { value: 'established', label: 'Established (3+ years)' }
 ];
 
-export function BusinessProfileStep({ data, onDataUpdate }: BusinessProfileStepProps) {
+export function BusinessProfileStep({ data, onDataUpdate, showErrors }: BusinessProfileStepProps) {
   const { register, watch, handleSubmit, setValue, reset } = useForm<BusinessProfile>({
     defaultValues: data
   });
@@ -62,22 +63,25 @@ export function BusinessProfileStep({ data, onDataUpdate }: BusinessProfileStepP
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <label htmlFor="businessType" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            Business Type / Industry *
+            Business Type / Industry <span className="text-[#22C55E]">*</span>
           </label>
           <select
             {...register('businessType', { required: true })}
-            className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.businessType ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
           >
             <option value="" className="text-[#CBD5E1]">Select business type</option>
             {BUSINESS_TYPES.map(type => (
               <option key={type} value={type}>{type}</option>
             ))}
           </select>
+          {showErrors && !watchedData.businessType && (
+            <p className="text-xs text-red-400 mt-2">Please select your business type</p>
+          )}
         </div>
 
         <div>
           <label htmlFor="industry" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            Specific Industry (Optional)
+            Specific Industry <span className="text-[#CBD5E1]/40 text-xs font-normal">(Optional)</span>
           </label>
           <input
             type="text"
@@ -91,51 +95,60 @@ export function BusinessProfileStep({ data, onDataUpdate }: BusinessProfileStepP
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <label htmlFor="businessSize" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            Business Size *
+            Business Size <span className="text-[#22C55E]">*</span>
           </label>
           <select
             {...register('businessSize', { required: true })}
-            className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.businessSize ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
           >
             <option value="" className="text-[#CBD5E1]">Select business size</option>
             {BUSINESS_SIZES.map(size => (
               <option key={size.value} value={size.value}>{size.label}</option>
             ))}
           </select>
+          {showErrors && !watchedData.businessSize && (
+            <p className="text-xs text-red-400 mt-2">Please select your business size</p>
+          )}
         </div>
 
         <div>
           <label htmlFor="businessStage" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            Business Stage *
+            Business Stage <span className="text-[#22C55E]">*</span>
           </label>
           <select
             {...register('businessStage', { required: true })}
-            className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.businessStage ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
           >
             <option value="" className="text-[#CBD5E1]">Select business stage</option>
             {BUSINESS_STAGES.map(stage => (
               <option key={stage.value} value={stage.value}>{stage.label}</option>
             ))}
           </select>
+          {showErrors && !watchedData.businessStage && (
+            <p className="text-xs text-red-400 mt-2">Please select your business stage</p>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <label htmlFor="city" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            City *
+            City <span className="text-[#22C55E]">*</span>
           </label>
           <input
             type="text"
             {...register('location.city', { required: true })}
             placeholder="Your city"
-            className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.location?.city ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
           />
+          {showErrors && !watchedData.location?.city && (
+            <p className="text-xs text-red-400 mt-2">Please enter your city</p>
+          )}
         </div>
 
         <div>
           <label htmlFor="district" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            District/Area
+            District/Area <span className="text-[#CBD5E1]/40 text-xs font-normal">(Optional)</span>
           </label>
           <input
             type="text"
@@ -148,26 +161,44 @@ export function BusinessProfileStep({ data, onDataUpdate }: BusinessProfileStepP
 
       <div>
         <label htmlFor="productsServices" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-          Products / Services Description *
+          Products / Services Description <span className="text-[#22C55E]">*</span>
         </label>
         <textarea
           {...register('productsServices', { required: true })}
           rows={4}
+          maxLength={500}
           placeholder="Briefly describe what you sell or offer"
-          className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all resize-none"
+          className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.productsServices?.trim() ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all resize-none`}
         />
+        <div className="flex justify-between items-center mt-2">
+          {showErrors && !watchedData.productsServices?.trim() ? (
+            <p className="text-xs text-red-400">Please describe your products or services</p>
+          ) : <span />}
+          <span className={`text-xs ml-auto ${(watchedData.productsServices?.length || 0) > 450 ? 'text-yellow-400' : 'text-[#CBD5E1]/40'}`}>
+            {watchedData.productsServices?.length || 0}/500
+          </span>
+        </div>
       </div>
 
       <div>
         <label htmlFor="uniqueSellingProposition" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-          Unique Selling Proposition (USP) *
+          Unique Selling Proposition (USP) <span className="text-[#22C55E]">*</span>
         </label>
         <textarea
           {...register('uniqueSellingProposition', { required: true })}
           rows={4}
+          maxLength={500}
           placeholder="What makes your business different from competitors?"
-          className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all resize-none"
+          className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.uniqueSellingProposition?.trim() ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all resize-none`}
         />
+        <div className="flex justify-between items-center mt-2">
+          {showErrors && !watchedData.uniqueSellingProposition?.trim() ? (
+            <p className="text-xs text-red-400">Please describe what makes your business unique</p>
+          ) : <span />}
+          <span className={`text-xs ml-auto ${(watchedData.uniqueSellingProposition?.length || 0) > 450 ? 'text-yellow-400' : 'text-[#CBD5E1]/40'}`}>
+            {watchedData.uniqueSellingProposition?.length || 0}/500
+          </span>
+        </div>
       </div>
     </div>
   );

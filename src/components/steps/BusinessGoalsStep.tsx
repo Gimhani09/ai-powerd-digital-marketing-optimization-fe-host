@@ -7,6 +7,7 @@ import { type BusinessGoals } from '@/types';
 interface BusinessGoalsStepProps {
   data: Partial<BusinessGoals>;
   onDataUpdate: (data: BusinessGoals) => void;
+  showErrors?: boolean;
 }
 
 const PRIMARY_GOALS = [
@@ -29,7 +30,7 @@ const SECONDARY_GOALS = [
   'Improve customer service reputation'
 ];
 
-export function BusinessGoalsStep({ data, onDataUpdate }: BusinessGoalsStepProps) {
+export function BusinessGoalsStep({ data, onDataUpdate, showErrors }: BusinessGoalsStepProps) {
   const { register, watch, setValue, reset } = useForm<BusinessGoals>({
     defaultValues: data
   });
@@ -52,11 +53,11 @@ export function BusinessGoalsStep({ data, onDataUpdate }: BusinessGoalsStepProps
     <div className="space-y-8">
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Primary Marketing Goal *
+          Primary Marketing Goal <span className="text-[#22C55E]">*</span>
         </label>
         <div className="space-y-3">
           {PRIMARY_GOALS.map(goal => (
-            <label key={goal.value} className="flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
+            <label key={goal.value} className="form-card flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
               <input
                 type="radio"
                 {...register('primaryGoal', { required: true })}
@@ -70,15 +71,23 @@ export function BusinessGoalsStep({ data, onDataUpdate }: BusinessGoalsStepProps
             </label>
           ))}
         </div>
+        {showErrors && !watchedData.primaryGoal && (
+          <p className="text-xs text-red-400 mt-2">Please select your primary marketing goal</p>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Secondary Goals (Optional)
+          Secondary Goals <span className="text-[#CBD5E1]/40 text-xs font-normal">(Optional)</span>
+          {(Array.isArray(watchedData.secondaryGoals) ? watchedData.secondaryGoals : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.secondaryGoals) ? watchedData.secondaryGoals : []).length} selected
+            </span>
+          )}
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {SECONDARY_GOALS.map(goal => (
-            <label key={goal} className="flex items-center p-3 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
+            <label key={goal} className="form-card flex items-center p-3 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
               <input
                 type="checkbox"
                 {...register('secondaryGoals')}
