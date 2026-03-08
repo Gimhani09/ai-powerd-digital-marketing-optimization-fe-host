@@ -25,15 +25,22 @@ export interface GenerateSmartPosterRequest {
   phone_number?: string;
   tags?: string[];
   size?: 'facebook' | 'instagram' | 'story' | 'twitter';
-  pipeline?: 'gemini+harfbuzz' | 'finetuned+pillow' | '';
 }
 
 export interface TextResponse {
+  success: boolean;
   product_name: string;
   content: string;
+  full_post?: string;
   language: string;
-  model_used: string;
-  polished: boolean;
+  model_used?: string;
+  pipeline?: string;
+  hashtags?: string[];
+  gpt2_draft?: string;
+  gemini_polished?: string;
+  description?: string;
+  season?: string;
+  discount?: string;
 }
 
 export interface PosterResponse {
