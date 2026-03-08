@@ -74,6 +74,7 @@ function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [processingResult, setProcessingResult] = useState<any>(null);
+  const [showErrors, setShowErrors] = useState(false);
 
   const currentStep = STEPS[currentStepIndex];
 
@@ -89,13 +90,46 @@ function Home() {
     'market-situation': 'marketSituation',
   };
 
+  const validateCurrentStep = (): boolean => {
+    const key = STEP_KEY_MAP[currentStep.id];
+    if (!key) return true;
+    const d = formData[key] as any;
+    if (!d) return false;
+    switch (currentStep.id) {
+      case 'business-profile':
+        return !!(d.businessType && d.businessSize && d.businessStage && d.location?.city && d.productsServices?.trim() && d.uniqueSellingProposition?.trim());
+      case 'budget-resources':
+        return !!(d.monthlyBudget && d.hasMarketingTeam && d.contentCreationCapacity?.length > 0);
+      case 'business-goals':
+        return !!d.primaryGoal;
+      case 'target-audience':
+        return !!(d.demographics?.ageRange && d.demographics?.incomeLevel && d.demographics?.gender?.length > 0 && d.location?.trim() && d.interests?.length > 0 && d.buyingFrequency);
+      case 'platforms-preferences':
+        return (d.preferredPlatforms?.length ?? 0) > 0;
+      case 'current-challenges':
+        return (d.challenges?.length ?? 0) > 0;
+      case 'strengths-opportunities':
+        return !!(d.strengths?.length > 0 && d.opportunities?.length > 0);
+      case 'market-situation':
+        return !!(d.seasonality?.length > 0 && d.stockAvailability && d.recentPriceChanges);
+      default:
+        return true;
+    }
+  };
+
   const handleNext = () => {
+    if (!validateCurrentStep()) {
+      setShowErrors(true);
+      return;
+    }
+    setShowErrors(false);
     if (currentStepIndex < STEPS.length - 1) {
       setCurrentStepIndex(currentStepIndex + 1);
     }
   };
 
   const handlePrevious = () => {
+    setShowErrors(false);
     if (currentStepIndex > 0) {
       setCurrentStepIndex(currentStepIndex - 1);
     }
@@ -144,6 +178,7 @@ function Home() {
     const stepProps = {
       data: (key ? formData[key] : {}) || {},
       onDataUpdate: handleStepDataUpdate,
+      showErrors,
     };
 
     switch (currentStep.id) {
@@ -182,7 +217,7 @@ function Home() {
       <main className="flex-1 overflow-y-auto bg-[#0B0F14]">
         <div className="min-h-screen">
           {/* Header */}
-          <header className="border-b border-[#1F2933] bg-[#0B0F14]">
+          <header className="border-b border-[#1F2933] bg-[#0B0F14] relative">
             <div className="max-w-4xl mx-auto px-8 py-8">
               <div className="flex items-center justify-between">
                 <div>
@@ -191,13 +226,24 @@ function Home() {
                     Answer a few questions and we'll build a marketing plan just for you
                   </p>
                 </div>
-                <a
-                  href="/dashboard"
-                  className="px-6 py-2.5 bg-[#22C55E] text-[#0B0F14] rounded-lg hover:bg-[#16A34A] transition-colors font-medium text-sm"
-                >
-                  Go to Dashboard
-                </a>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-[#CBD5E1] tabular-nums">
+                    Step <span className="text-[#F9FAFB] font-medium">{currentStepIndex + 1}</span> of {STEPS.length}
+                  </span>
+                  <a
+                    href="/dashboard"
+                    className="px-6 py-2.5 bg-[#22C55E] text-[#0B0F14] rounded-lg hover:bg-[#16A34A] transition-colors font-medium text-sm"
+                  >
+                    Go to Dashboard
+                  </a>
+                </div>
               </div>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1F2933]">
+              <div 
+                className="h-full bg-[#22C55E] transition-all duration-500 ease-out"
+                style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
+              />
             </div>
           </header>
 
@@ -228,21 +274,29 @@ function Home() {
 
               {/* Navigation Buttons */}
               {currentStep.id !== 'review' && (
-                <div className="flex justify-between mt-12 pt-8 border-t border-[#1F2933]">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentStepIndex === 0}
-                    className="px-6 py-3 bg-[#0B0F14] text-[#F9FAFB] rounded-lg border border-[#1F2933] hover:border-[#CBD5E1]/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  
-                  <button
-                    onClick={handleNext}
-                    className="px-6 py-3 bg-[#22C55E] text-[#0B0F14] rounded-lg font-medium hover:bg-[#16A34A] transition-all"
-                  >
-                    {currentStepIndex === STEPS.length - 2 ? 'Review' : 'Next'}
-                  </button>
+                <div className="mt-12 pt-8 border-t border-[#1F2933]">
+                  {showErrors && (
+                    <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                      <p className="text-sm text-red-400">Please complete all required fields before continuing</p>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <button
+                      onClick={handlePrevious}
+                      disabled={currentStepIndex === 0}
+                      className="px-6 py-3 bg-[#0B0F14] text-[#F9FAFB] rounded-lg border border-[#1F2933] hover:border-[#CBD5E1]/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    
+                    <button
+                      onClick={handleNext}
+                      className="px-6 py-3 bg-[#22C55E] text-[#0B0F14] rounded-lg font-medium hover:bg-[#16A34A] transition-all"
+                    >
+                      {currentStepIndex === STEPS.length - 2 ? 'Review' : 'Next'}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

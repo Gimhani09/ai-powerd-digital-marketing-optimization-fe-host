@@ -7,6 +7,7 @@ import { type StrengthsOpportunities } from '@/types';
 interface StrengthsOpportunitiesStepProps {
   data: Partial<StrengthsOpportunities>;
   onDataUpdate: (data: StrengthsOpportunities) => void;
+  showErrors?: boolean;
 }
 
 const BUSINESS_STRENGTHS = [
@@ -115,7 +116,7 @@ const GROWTH_OPPORTUNITIES = [
   }
 ];
 
-export function StrengthsOpportunitiesStep({ data, onDataUpdate }: StrengthsOpportunitiesStepProps) {
+export function StrengthsOpportunitiesStep({ data, onDataUpdate, showErrors }: StrengthsOpportunitiesStepProps) {
   const { register, watch, setValue, reset } = useForm<StrengthsOpportunities>({
     defaultValues: data
   });
@@ -138,7 +139,12 @@ export function StrengthsOpportunitiesStep({ data, onDataUpdate }: StrengthsOppo
     <div className="space-y-8">
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          What are your business strengths? *
+          What are your business strengths? <span className="text-[#22C55E]">*</span>
+          {(Array.isArray(watchedData.strengths) ? watchedData.strengths : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.strengths) ? watchedData.strengths : []).length} selected
+            </span>
+          )}
         </label>
         <p className="text-sm text-[#CBD5E1] mb-4">
           Select your key advantages that we can leverage in your marketing strategy.
@@ -146,7 +152,7 @@ export function StrengthsOpportunitiesStep({ data, onDataUpdate }: StrengthsOppo
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {BUSINESS_STRENGTHS.map(strength => (
-            <label key={strength.id} className="flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
+            <label key={strength.id} className="form-card flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
               <input
                 type="checkbox"
                 {...register('strengths')}
@@ -164,11 +170,19 @@ export function StrengthsOpportunitiesStep({ data, onDataUpdate }: StrengthsOppo
             </label>
           ))}
         </div>
+        {showErrors && !(Array.isArray(watchedData.strengths) && watchedData.strengths.length > 0) && (
+          <p className="text-xs text-red-400 mt-2">Please select at least one strength</p>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          What growth opportunities do you see? *
+          What growth opportunities do you see? <span className="text-[#22C55E]">*</span>
+          {(Array.isArray(watchedData.opportunities) ? watchedData.opportunities : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.opportunities) ? watchedData.opportunities : []).length} selected
+            </span>
+          )}
         </label>
         <p className="text-sm text-[#CBD5E1] mb-4">
           Select opportunities that align with your business goals and resources.
@@ -176,7 +190,7 @@ export function StrengthsOpportunitiesStep({ data, onDataUpdate }: StrengthsOppo
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {GROWTH_OPPORTUNITIES.map(opportunity => (
-            <label key={opportunity.id} className="flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
+            <label key={opportunity.id} className="form-card flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
               <input
                 type="checkbox"
                 {...register('opportunities')}
@@ -194,21 +208,30 @@ export function StrengthsOpportunitiesStep({ data, onDataUpdate }: StrengthsOppo
             </label>
           ))}
         </div>
+        {showErrors && !(Array.isArray(watchedData.opportunities) && watchedData.opportunities.length > 0) && (
+          <p className="text-xs text-red-400 mt-2">Please select at least one opportunity</p>
+        )}
       </div>
 
       <div>
         <label htmlFor="additionalNotes" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-          Additional Notes (Optional)
+          Additional Notes <span className="text-[#CBD5E1]/40 text-xs font-normal">(Optional)</span>
         </label>
         <textarea
           {...register('additionalNotes')}
           rows={4}
+          maxLength={500}
           placeholder="Any additional strengths, opportunities, or context you'd like to share..."
           className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all resize-none"
         />
-        <p className="text-xs text-[#CBD5E1]/60 mt-3">
-          Include any unique aspects of your business that might impact your marketing strategy
-        </p>
+        <div className="flex justify-between items-center mt-2">
+          <p className="text-xs text-[#CBD5E1]/60">
+            Include any unique aspects of your business that might impact your marketing strategy
+          </p>
+          <span className={`text-xs ml-2 flex-shrink-0 ${(watchedData.additionalNotes?.length || 0) > 450 ? 'text-yellow-400' : 'text-[#CBD5E1]/40'}`}>
+            {watchedData.additionalNotes?.length || 0}/500
+          </span>
+        </div>
       </div>
     </div>
   );

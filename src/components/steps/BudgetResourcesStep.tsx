@@ -7,6 +7,7 @@ import { type MarketingBudgetResources } from '@/types';
 interface BudgetResourcesStepProps {
   data: Partial<MarketingBudgetResources>;
   onDataUpdate: (data: MarketingBudgetResources) => void;
+  showErrors?: boolean;
 }
 
 const BUDGET_RANGES = [
@@ -27,7 +28,7 @@ const CONTENT_CAPACITIES = [
   'No content creation capacity'
 ];
 
-export function BudgetResourcesStep({ data, onDataUpdate }: BudgetResourcesStepProps) {
+export function BudgetResourcesStep({ data, onDataUpdate, showErrors }: BudgetResourcesStepProps) {
   const { register, watch, setValue, handleSubmit, reset } = useForm<MarketingBudgetResources>({
     defaultValues: data
   });
@@ -51,25 +52,28 @@ export function BudgetResourcesStep({ data, onDataUpdate }: BudgetResourcesStepP
     <div className="space-y-8">
       <div>
         <label htmlFor="monthlyBudget" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-          Monthly Marketing Budget *
+          Monthly Marketing Budget <span className="text-[#22C55E]">*</span>
         </label>
         <select
           {...register('monthlyBudget', { required: true })}
-          className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+          className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.monthlyBudget ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
         >
           <option value="" className="text-[#CBD5E1]">Select budget range</option>
           {BUDGET_RANGES.map(range => (
             <option key={range} value={range}>{range}</option>
           ))}
         </select>
+        {showErrors && !watchedData.monthlyBudget && (
+          <p className="text-xs text-red-400 mt-2">Please select your monthly budget</p>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Do you have a marketing team? *
+          Do you have a marketing team? <span className="text-[#22C55E]">*</span>
         </label>
         <div className="space-y-3">
-          <label className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+          <label className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
             <input
               type="radio"
               {...register('hasMarketingTeam', { required: true })}
@@ -78,7 +82,7 @@ export function BudgetResourcesStep({ data, onDataUpdate }: BudgetResourcesStepP
             />
             <span className="ml-3 text-[#F9FAFB]">Yes, we have a marketing team</span>
           </label>
-          <label className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+          <label className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
             <input
               type="radio"
               {...register('hasMarketingTeam', { required: true })}
@@ -88,6 +92,9 @@ export function BudgetResourcesStep({ data, onDataUpdate }: BudgetResourcesStepP
             <span className="ml-3 text-[#F9FAFB]">No, I handle marketing myself</span>
           </label>
         </div>
+        {showErrors && !watchedData.hasMarketingTeam && (
+          <p className="text-xs text-red-400 mt-2">Please select an option</p>
+        )}
       </div>
 
       {hasMarketingTeam === 'true' && (
@@ -108,11 +115,16 @@ export function BudgetResourcesStep({ data, onDataUpdate }: BudgetResourcesStepP
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Content Creation Capacity *
+          Content Creation Capacity <span className="text-[#22C55E]">*</span>
+          {(Array.isArray(watchedData.contentCreationCapacity) ? watchedData.contentCreationCapacity : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.contentCreationCapacity) ? watchedData.contentCreationCapacity : []).length} selected
+            </span>
+          )}
         </label>
         <div className="space-y-3">
           {CONTENT_CAPACITIES.map(capacity => (
-            <label key={capacity} className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+            <label key={capacity} className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
               <input
                 type="checkbox"
                 {...register('contentCreationCapacity')}
@@ -123,9 +135,13 @@ export function BudgetResourcesStep({ data, onDataUpdate }: BudgetResourcesStepP
             </label>
           ))}
         </div>
-        <p className="text-xs text-[#CBD5E1]/60 mt-3">
-          Select all that apply to your business
-        </p>
+        {showErrors && !(Array.isArray(watchedData.contentCreationCapacity) && watchedData.contentCreationCapacity.length > 0) ? (
+          <p className="text-xs text-red-400 mt-3">Please select at least one option</p>
+        ) : (
+          <p className="text-xs text-[#CBD5E1]/60 mt-3">
+            Select all that apply to your business
+          </p>
+        )}
       </div>
     </div>
   );

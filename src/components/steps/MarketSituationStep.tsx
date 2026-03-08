@@ -8,6 +8,7 @@ import { type MarketSituation } from '@/types';
 interface MarketSituationStepProps {
   data: Partial<MarketSituation>;
   onDataUpdate: (data: MarketSituation) => void;
+  showErrors?: boolean;
 }
 
 const SEASONALITY_CATEGORIES = {
@@ -83,7 +84,7 @@ const STOCK_AVAILABILITY_OPTIONS = [
   { value: 'pre-order', label: 'Pre-order/Made-to-order', description: 'Custom orders or advance booking required' }
 ];
 
-export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepProps) {
+export function MarketSituationStep({ data, onDataUpdate, showErrors }: MarketSituationStepProps) {
   const { register, watch, setValue, getValues, reset } = useForm<MarketSituation>({
     defaultValues: {
       ...data,
@@ -99,6 +100,7 @@ export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepP
 
   const recentPriceChanges = watch('recentPriceChanges');
   const seasonalityOther = watch('seasonalityOther');
+  const watchedData = watch();
 
   useEffect(() => {
     console.log('📥 [MarketSituationStep] received data:', data);
@@ -177,7 +179,12 @@ export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepP
     <div className="space-y-8">
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Seasonality Factors *
+          Seasonality Factors <span className="text-[#22C55E]">*</span>
+          {selectedSeasonality.length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {selectedSeasonality.reduce((acc, cat) => acc + cat.subcategories.length, 0)} selected
+            </span>
+          )}
         </label>
         <p className="text-sm text-[#CBD5E1] mb-4">
           When does your business typically perform better or face challenges? Select relevant seasonal factors that affect your business.
@@ -249,6 +256,9 @@ export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepP
             )}
           </div>
         </div>
+        {showErrors && selectedSeasonality.length === 0 && (
+          <p className="text-xs text-red-400 mt-2">Please select at least one seasonal factor</p>
+        )}
       </div>
 
       <div>
@@ -268,11 +278,11 @@ export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepP
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Stock/Service Availability *
+          Stock/Service Availability <span className="text-[#22C55E]">*</span>
         </label>
         <div className="space-y-3">
           {STOCK_AVAILABILITY_OPTIONS.map(option => (
-            <label key={option.value} className="flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
+            <label key={option.value} className="form-card flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
               <input
                 type="radio"
                 {...register('stockAvailability', { required: true })}
@@ -286,14 +296,17 @@ export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepP
             </label>
           ))}
         </div>
+        {showErrors && !watchedData.stockAvailability && (
+          <p className="text-xs text-red-400 mt-2">Please select your stock/service availability</p>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Recent Price Changes *
+          Recent Price Changes <span className="text-[#22C55E]">*</span>
         </label>
         <div className="space-y-3">
-          <label className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+          <label className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
             <input
               type="radio"
               {...register('recentPriceChanges', { required: true })}
@@ -302,7 +315,7 @@ export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepP
             />
             <span className="ml-3 text-[#F9FAFB]">Yes, we've recently changed our prices</span>
           </label>
-          <label className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+          <label className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
             <input
               type="radio"
               {...register('recentPriceChanges', { required: true })}
@@ -312,6 +325,9 @@ export function MarketSituationStep({ data, onDataUpdate }: MarketSituationStepP
             <span className="ml-3 text-[#F9FAFB]">No recent price changes</span>
           </label>
         </div>
+        {showErrors && !watchedData.recentPriceChanges && (
+          <p className="text-xs text-red-400 mt-2">Please select an option</p>
+        )}
       </div>
 
       {recentPriceChanges === 'true' && (

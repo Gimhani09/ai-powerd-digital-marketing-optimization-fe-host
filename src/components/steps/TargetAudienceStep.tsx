@@ -7,6 +7,7 @@ import { type TargetAudience } from '@/types';
 interface TargetAudienceStepProps {
   data: Partial<TargetAudience>;
   onDataUpdate: (data: TargetAudience) => void;
+  showErrors?: boolean;
 }
 
 const AGE_RANGES = [
@@ -55,7 +56,7 @@ const BUYING_FREQUENCIES = [
   { value: 'daily', label: 'Daily' }
 ];
 
-export function TargetAudienceStep({ data, onDataUpdate }: TargetAudienceStepProps) {
+export function TargetAudienceStep({ data, onDataUpdate, showErrors }: TargetAudienceStepProps) {
   const { register, watch, setValue, reset } = useForm<TargetAudience>({
     defaultValues: data
   });
@@ -80,42 +81,53 @@ export function TargetAudienceStep({ data, onDataUpdate }: TargetAudienceStepPro
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <label htmlFor="ageRange" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            Primary Age Range *
+            Primary Age Range <span className="text-[#22C55E]">*</span>
           </label>
           <select
             {...register('demographics.ageRange', { required: true })}
-            className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.demographics?.ageRange ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
           >
             <option value="" className="text-[#CBD5E1]">Select age range</option>
             {AGE_RANGES.map(range => (
               <option key={range} value={range}>{range}</option>
             ))}
           </select>
+          {showErrors && !watchedData.demographics?.ageRange && (
+            <p className="text-xs text-red-400 mt-2">Please select the primary age range</p>
+          )}
         </div>
 
         <div>
           <label htmlFor="incomeLevel" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-            Income Level *
+            Income Level <span className="text-[#22C55E]">*</span>
           </label>
           <select
             {...register('demographics.incomeLevel', { required: true })}
-            className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.demographics?.incomeLevel ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
           >
             <option value="" className="text-[#CBD5E1]">Select income level</option>
             {INCOME_LEVELS.map(level => (
               <option key={level} value={level}>{level}</option>
             ))}
           </select>
+          {showErrors && !watchedData.demographics?.incomeLevel && (
+            <p className="text-xs text-red-400 mt-2">Please select the income level</p>
+          )}
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Gender *
+          Gender <span className="text-[#22C55E]">*</span>
+          {(Array.isArray(watchedData.demographics?.gender) ? watchedData.demographics.gender : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.demographics?.gender) ? watchedData.demographics.gender : []).length} selected
+            </span>
+          )}
         </label>
         <div className="grid grid-cols-2 gap-3">
           {GENDERS.map(gender => (
-            <label key={gender} className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+            <label key={gender} className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
               <input
                 type="checkbox"
                 {...register('demographics.gender')}
@@ -126,27 +138,38 @@ export function TargetAudienceStep({ data, onDataUpdate }: TargetAudienceStepPro
             </label>
           ))}
         </div>
+        {showErrors && !(Array.isArray(watchedData.demographics?.gender) && watchedData.demographics.gender.length > 0) && (
+          <p className="text-xs text-red-400 mt-2">Please select at least one gender</p>
+        )}
       </div>
 
       <div>
         <label htmlFor="location" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-          Customer Location *
+          Customer Location <span className="text-[#22C55E]">*</span>
         </label>
         <input
           type="text"
           {...register('location', { required: true })}
           placeholder="e.g., Local area, nationwide, specific cities"
-          className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+          className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.location?.trim() ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
         />
+        {showErrors && !watchedData.location?.trim() && (
+          <p className="text-xs text-red-400 mt-2">Please enter the customer location</p>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Customer Interests *
+          Customer Interests <span className="text-[#22C55E]">*</span>
+          {(Array.isArray(watchedData.interests) ? watchedData.interests : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.interests) ? watchedData.interests : []).length} selected
+            </span>
+          )}
         </label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {COMMON_INTERESTS.map(interest => (
-            <label key={interest} className="flex items-center p-3 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+            <label key={interest} className="form-card flex items-center p-3 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
               <input
                 type="checkbox"
                 {...register('interests')}
@@ -157,24 +180,31 @@ export function TargetAudienceStep({ data, onDataUpdate }: TargetAudienceStepPro
             </label>
           ))}
         </div>
-        <p className="text-xs text-[#CBD5E1]/60 mt-3">
-          Select interests that align with your target customers
-        </p>
+        {showErrors && !(Array.isArray(watchedData.interests) && watchedData.interests.length > 0) ? (
+          <p className="text-xs text-red-400 mt-3">Please select at least one customer interest</p>
+        ) : (
+          <p className="text-xs text-[#CBD5E1]/60 mt-3">
+            Select interests that align with your target customers
+          </p>
+        )}
       </div>
 
       <div>
         <label htmlFor="buyingFrequency" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-          How often do they typically buy your type of product/service? *
+          How often do they typically buy your type of product/service? <span className="text-[#22C55E]">*</span>
         </label>
         <select
           {...register('buyingFrequency', { required: true })}
-          className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all"
+          className={`w-full px-4 py-3 bg-[#1F2933] border ${showErrors && !watchedData.buyingFrequency ? 'border-red-500/50' : 'border-[#1F2933]'} text-[#F9FAFB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all`}
         >
           <option value="" className="text-[#CBD5E1]">Select buying frequency</option>
           {BUYING_FREQUENCIES.map(freq => (
             <option key={freq.value} value={freq.value}>{freq.label}</option>
           ))}
         </select>
+        {showErrors && !watchedData.buyingFrequency && (
+          <p className="text-xs text-red-400 mt-2">Please select the buying frequency</p>
+        )}
       </div>
     </div>
   );

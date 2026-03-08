@@ -7,6 +7,7 @@ import { type PlatformsPreferences } from '@/types';
 interface PlatformsPreferencesStepProps {
   data: Partial<PlatformsPreferences>;
   onDataUpdate: (data: PlatformsPreferences) => void;
+  showErrors?: boolean;
 }
 
 const PLATFORMS = [
@@ -42,7 +43,7 @@ const BRAND_COLORS = [
   '#EE5A24'  // Orange Red
 ];
 
-export function PlatformsPreferencesStep({ data, onDataUpdate }: PlatformsPreferencesStepProps) {
+export function PlatformsPreferencesStep({ data, onDataUpdate, showErrors }: PlatformsPreferencesStepProps) {
   const { register, watch, setValue, getValues, reset } = useForm<PlatformsPreferences>({
     defaultValues: data
   });
@@ -73,11 +74,16 @@ export function PlatformsPreferencesStep({ data, onDataUpdate }: PlatformsPrefer
     <div className="space-y-8">
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          Which platforms would you prefer to focus on? *
+          Which platforms would you prefer to focus on? <span className="text-[#22C55E]">*</span>
+          {(Array.isArray(watchedData.preferredPlatforms) ? watchedData.preferredPlatforms : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.preferredPlatforms) ? watchedData.preferredPlatforms : []).length} selected
+            </span>
+          )}
         </label>
         <div className="space-y-3">
           {PLATFORMS.map(platform => (
-            <label key={platform.name} className="flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
+            <label key={platform.name} className="form-card flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
               <input
                 type="checkbox"
                 {...register('preferredPlatforms')}
@@ -91,6 +97,9 @@ export function PlatformsPreferencesStep({ data, onDataUpdate }: PlatformsPrefer
             </label>
           ))}
         </div>
+        {showErrors && !(Array.isArray(watchedData.preferredPlatforms) && watchedData.preferredPlatforms.length > 0) && (
+          <p className="text-xs text-red-400 mt-2">Please select at least one platform</p>
+        )}
       </div>
 
       <div>
@@ -129,7 +138,7 @@ export function PlatformsPreferencesStep({ data, onDataUpdate }: PlatformsPrefer
         </h3>
         
         <div className="space-y-4">
-          <label className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+          <label className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
             <input
               type="checkbox"
               {...register('brandAssets.hasLogo')}
@@ -138,7 +147,7 @@ export function PlatformsPreferencesStep({ data, onDataUpdate }: PlatformsPrefer
             <span className="ml-3 text-[#F9FAFB]">I have a business logo</span>
           </label>
           
-          <label className="flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
+          <label className="form-card flex items-center p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg cursor-pointer hover:border-[#CBD5E1]/20 transition-all">
             <input
               type="checkbox"
               {...register('brandAssets.hasBrandStyle')}

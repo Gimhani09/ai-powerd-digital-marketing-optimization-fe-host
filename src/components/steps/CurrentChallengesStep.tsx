@@ -7,6 +7,7 @@ import { type CurrentChallenges } from '@/types';
 interface CurrentChallengesStepProps {
   data: Partial<CurrentChallenges>;
   onDataUpdate: (data: CurrentChallenges) => void;
+  showErrors?: boolean;
 }
 
 const COMMON_CHALLENGES = [
@@ -72,7 +73,7 @@ const COMMON_CHALLENGES = [
   }
 ];
 
-export function CurrentChallengesStep({ data, onDataUpdate }: CurrentChallengesStepProps) {
+export function CurrentChallengesStep({ data, onDataUpdate, showErrors }: CurrentChallengesStepProps) {
   const { register, watch, setValue, reset } = useForm<CurrentChallenges>({
     defaultValues: data
   });
@@ -95,7 +96,12 @@ export function CurrentChallengesStep({ data, onDataUpdate }: CurrentChallengesS
     <div className="space-y-8">
       <div>
         <label className="block text-sm font-medium text-[#F9FAFB] mb-4">
-          What are your current marketing challenges? *
+          What are your current marketing challenges? <span className="text-[#22C55E]">*</span>
+          {(Array.isArray(watchedData.challenges) ? watchedData.challenges : []).length > 0 && (
+            <span className="ml-2 text-xs text-[#22C55E] font-normal">
+              {(Array.isArray(watchedData.challenges) ? watchedData.challenges : []).length} selected
+            </span>
+          )}
         </label>
         <p className="text-sm text-[#CBD5E1] mb-4">
           Select all challenges that apply to your business. This helps us create a strategy that addresses your specific needs.
@@ -103,7 +109,7 @@ export function CurrentChallengesStep({ data, onDataUpdate }: CurrentChallengesS
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {COMMON_CHALLENGES.map(challenge => (
-            <label key={challenge.id} className="flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
+            <label key={challenge.id} className="form-card flex items-start p-4 bg-[#1F2933] border border-[#1F2933] rounded-lg hover:border-[#CBD5E1]/20 cursor-pointer transition-all">
               <input
                 type="checkbox"
                 {...register('challenges')}
@@ -121,21 +127,30 @@ export function CurrentChallengesStep({ data, onDataUpdate }: CurrentChallengesS
             </label>
           ))}
         </div>
+        {showErrors && !(Array.isArray(watchedData.challenges) && watchedData.challenges.length > 0) && (
+          <p className="text-xs text-red-400 mt-2">Please select at least one challenge</p>
+        )}
       </div>
 
       <div>
         <label htmlFor="additionalChallenges" className="block text-sm font-medium text-[#F9FAFB] mb-3">
-          Additional Challenges (Optional)
+          Additional Challenges <span className="text-[#CBD5E1]/40 text-xs font-normal">(Optional)</span>
         </label>
         <textarea
           {...register('additionalChallenges')}
           rows={4}
+          maxLength={500}
           placeholder="Describe any other specific challenges you're facing with marketing that weren't listed above..."
           className="w-full px-4 py-3 bg-[#1F2933] border border-[#1F2933] text-[#F9FAFB] placeholder-[#CBD5E1]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:border-transparent transition-all resize-none"
         />
-        <p className="text-xs text-[#CBD5E1]/60 mt-3">
-          Be as specific as possible to help us create a more targeted strategy
-        </p>
+        <div className="flex justify-between items-center mt-2">
+          <p className="text-xs text-[#CBD5E1]/60">
+            Be as specific as possible to help us create a more targeted strategy
+          </p>
+          <span className={`text-xs ml-2 flex-shrink-0 ${(watchedData.additionalChallenges?.length || 0) > 450 ? 'text-yellow-400' : 'text-[#CBD5E1]/40'}`}>
+            {watchedData.additionalChallenges?.length || 0}/500
+          </span>
+        </div>
       </div>
     </div>
   );
