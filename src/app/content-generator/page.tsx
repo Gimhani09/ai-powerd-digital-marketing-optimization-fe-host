@@ -150,7 +150,6 @@ const GENERATION_STEPS = [
 
 export default function ContentGeneratorPage() {
   const [productName, setProductName] = useState('');
-  const [extraDescription, setExtraDescription] = useState('');
   const [showProductSuggestions, setShowProductSuggestions] = useState(true);
   const [season, setSeason] = useState('No specific season');
   const [discount, setDiscount] = useState('');
@@ -158,7 +157,7 @@ export default function ContentGeneratorPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const language = 'si'; // Fixed: Sinhala only
-  const [selectedSizes, setSelectedSizes] = useState<PosterSize[]>(['facebook']);
+  const [selectedSizes, setSelectedSizes] = useState<PosterSize[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatingStep, setGeneratingStep] = useState(0);
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
@@ -281,8 +280,19 @@ export default function ContentGeneratorPage() {
   };
 
   const handleGenerateContent = async (includePoster: boolean) => {
-    if (!productName.trim()) {
+    const trimmedName = productName.trim();
+    if (!trimmedName) {
       setGenerationError('Please enter a product or service name.');
+      return;
+    }
+    // TC-14: reject numbers-only input
+    if (/^\d+$/.test(trimmedName)) {
+      setGenerationError('Please enter a product or service name, not just numbers (e.g. "Smartphone", "Kottu").');
+      return;
+    }
+    // TC-15: reject excessively long input
+    if (trimmedName.length > 100) {
+      setGenerationError(`Product name is too long (${trimmedName.length}/100 characters). Please shorten it so it fits nicely on the poster.`);
       return;
     }
 
@@ -294,12 +304,10 @@ export default function ContentGeneratorPage() {
     startStepTimer();
 
     try {
-      const tagDescription = buildDescription({
+      const description = buildDescription({
         tags: selectedTags,
         season: season !== 'No specific season' ? season : undefined,
-      });
-      // Merge user's freeform description with tag-based description
-      const description = [extraDescription.trim(), tagDescription].filter(Boolean).join(' — ') || undefined;
+      }) || undefined;
 
       const tone = mapTone(selectedTags);
       const backendLanguage = 'sinhala';
@@ -441,8 +449,25 @@ export default function ContentGeneratorPage() {
                           }}
                           onFocus={() => setShowProductSuggestions(true)}
                           placeholder="e.g., Samsung Galaxy Phone, Chicken Kottu, Sofa Set..."
-                          className="w-full px-4 py-3 bg-[#0B0F14] border border-[#1F2933] rounded-xl focus:outline-none focus:border-[#CBD5E1]/30 text-[#F9FAFB] placeholder:text-[#CBD5E1]/50"
+                          className={`w-full px-4 py-3 bg-[#0B0F14] border rounded-xl focus:outline-none focus:border-[#CBD5E1]/30 text-[#F9FAFB] placeholder:text-[#CBD5E1]/50 ${
+                            productName.trim().length > 100
+                              ? 'border-red-500'
+                              : /^\d+$/.test(productName.trim()) && productName.trim().length > 0
+                              ? 'border-yellow-500'
+                              : 'border-[#1F2933]'
+                          }`}
+                          maxLength={120}
                         />
+                        {/* TC-14 warning: numbers only */}
+                        {/^\d+$/.test(productName.trim()) && productName.trim().length > 0 && (
+                          <p className="text-xs text-yellow-400 mt-1">Enter a product name, not just numbers.</p>
+                        )}
+                        {/* TC-15 warning: too long */}
+                        {productName.trim().length > 80 && (
+                          <p className={`text-xs mt-1 ${productName.trim().length > 100 ? 'text-red-400' : 'text-yellow-400'}`}>
+                            {productName.trim().length}/100 characters — {productName.trim().length > 100 ? 'too long, please shorten' : 'getting long, shorter names look better on posters'}
+                          </p>
+                        )}
                         
                         {showProductSuggestions && (
                           <div className="mt-3">
@@ -484,20 +509,6 @@ export default function ContentGeneratorPage() {
                             Show suggestions
                           </button>
                         )}
-                      </div>
-
-                      {/* Extra Description */}
-                      <div>
-                        <label className="block text-sm font-medium text-[#F9FAFB] mb-2">
-                          Extra Details <span className="text-[#CBD5E1] text-xs font-normal">(Optional — helps the AI)</span>
-                        </label>
-                        <textarea
-                          value={extraDescription}
-                          onChange={(e) => setExtraDescription(e.target.value)}
-                          placeholder="e.g., Imported from Japan, available in 3 colors, suitable for all ages..."
-                          rows={2}
-                          className="w-full px-4 py-3 bg-[#0B0F14] border border-[#1F2933] rounded-xl focus:outline-none focus:border-[#CBD5E1]/30 text-[#F9FAFB] placeholder:text-[#CBD5E1]/50 resize-none"
-                        />
                       </div>
 
                       {/* Season/Festival */}
