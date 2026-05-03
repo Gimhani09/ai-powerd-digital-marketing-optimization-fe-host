@@ -82,6 +82,13 @@ export interface PosterResponse {
   gpt2_draft?: string;
   gemini_polished?: string;
   context?: Record<string, string>;
+  interpreted_product?: {
+    sinhala: string;
+    english: string;
+    category: string;
+    location: string;
+    was_corrected: boolean;
+  };
 }
 
 export interface RenderPosterOnlyRequest {

@@ -168,6 +168,9 @@ export default function ContentGeneratorPage() {
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [activePosterIndex, setActivePosterIndex] = useState(0);
+  const [interpretedProduct, setInterpretedProduct] = useState<{
+    sinhala: string; english: string; location: string; was_corrected: boolean;
+  } | null>(null);
   const [lastGenerateMode, setLastGenerateMode] = useState<boolean>(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const stepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -301,6 +304,7 @@ export default function ContentGeneratorPage() {
     setActiveTab('content');
     setLastGenerateMode(includePoster);
     setActivePosterIndex(0);
+    setInterpretedProduct(null);
     startStepTimer();
 
     try {
@@ -332,6 +336,13 @@ export default function ContentGeneratorPage() {
 
       setGeneratedContent(firstResponse.content);
       setHashtags(firstResponse.hashtags || []);
+
+      // Capture AI input interpretation result (for correction notice)
+      if (firstResponse.interpreted_product?.was_corrected) {
+        setInterpretedProduct(firstResponse.interpreted_product);
+      } else {
+        setInterpretedProduct(null);
+      }
 
       if (!includePoster) {
         setGeneratedPosters([]);
@@ -708,6 +719,22 @@ export default function ContentGeneratorPage() {
 
                     {generatedContent ? (
                       <div className="space-y-5">
+                        {/* AI interpretation notice */}
+                        {interpretedProduct && (
+                          <div className="flex items-start gap-3 bg-[#1a3a2a] border border-[#22C55E]/40 rounded-xl px-4 py-3 text-sm">
+                            <span className="text-[#22C55E] text-lg leading-none mt-0.5"></span>
+                            <div className="text-[#CBD5E1]">
+                              <span className="font-semibold text-[#22C55E]">Did you mean: </span>
+                              <span className="font-medium text-white">{interpretedProduct.sinhala}</span>
+                              {interpretedProduct.english && interpretedProduct.english !== interpretedProduct.sinhala && (
+                                <span className="text-[#94A3B8]"> ({interpretedProduct.english})</span>
+                              )}
+                              {interpretedProduct.location && (
+                                <span className="text-[#94A3B8]"> · from <span className="text-[#CBD5E1]">{interpretedProduct.location}</span></span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         {/* Tabs */}
                         <div className="flex gap-2 border-b border-[#1F2933]">
                           <button
@@ -990,11 +1017,12 @@ export default function ContentGeneratorPage() {
                 onClick={closePosterModal}
               >
                 <div 
-                  className="bg-[#0B0F14] border border-[#1F2933] rounded-2xl max-w-5xl max-h-[90vh] overflow-auto"
+                  className="bg-[#0B0F14] border border-[#1F2933] rounded-2xl flex flex-col"
+                  style={{ maxWidth: '90vw', maxHeight: '90vh' }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Modal Header */}
-                  <div className="sticky top-0 bg-[#0B0F14] border-b border-[#1F2933] p-5 flex justify-between items-center">
+                  <div className="flex-shrink-0 bg-[#0B0F14] border-b border-[#1F2933] p-5 flex justify-between items-center rounded-t-2xl">
                     <div>
                       <h3 className="text-xl font-semibold text-[#F9FAFB]">
                         {selectedPoster.label}
@@ -1020,13 +1048,14 @@ export default function ContentGeneratorPage() {
                     </div>
                   </div>
 
-                  {/* Modal Body */}
-                  <div className="p-6">
-                    <div className="bg-[#1F2933] rounded-lg overflow-hidden">
+                  {/* Modal Body — image constrained to remaining viewport height */}
+                  <div className="flex-1 overflow-auto p-6 min-h-0">
+                    <div className="bg-[#1F2933] rounded-lg overflow-hidden flex items-center justify-center">
                       <img 
                         src={selectedPoster.url} 
                         alt={`${selectedPoster.label} poster preview`}
-                        className="w-full h-auto"
+                        className="block object-contain"
+                        style={{ maxWidth: '100%', maxHeight: 'calc(90vh - 100px)' }}
                       />
                     </div>
                   </div>
